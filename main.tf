@@ -88,16 +88,19 @@ locals {
 #
 
 resource "aws_cloudwatch_log_group" "main" {
-  name              = local.awslogs_group
+  name = local.awslogs_group
   retention_in_days = var.logs_cloudwatch_retention
 
   kms_key_id = var.kms_key_id
 
-  tags = {
-    Name        = "${var.name}-${var.environment}"
-    Environment = var.environment
-    Automation  = "Terraform"
-  }
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 resource "aws_cloudwatch_metric_alarm" "alarm_cpu" {
@@ -119,6 +122,15 @@ resource "aws_cloudwatch_metric_alarm" "alarm_cpu" {
     "ClusterName" = var.ecs_cluster.name
     "ServiceName" = aws_ecs_service.main[count.index].name
   }
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 resource "aws_cloudwatch_metric_alarm" "alarm_mem" {
@@ -140,6 +152,15 @@ resource "aws_cloudwatch_metric_alarm" "alarm_mem" {
     "ClusterName" = var.ecs_cluster.name
     "ServiceName" = aws_ecs_service.main[count.index].name
   }
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 resource "aws_cloudwatch_metric_alarm" "alarm_cpu_no_lb" {
@@ -161,6 +182,15 @@ resource "aws_cloudwatch_metric_alarm" "alarm_cpu_no_lb" {
     "ClusterName" = var.ecs_cluster.name
     "ServiceName" = aws_ecs_service.main_no_lb[count.index].name
   }
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 resource "aws_cloudwatch_metric_alarm" "alarm_mem_no_lb" {
@@ -182,6 +212,15 @@ resource "aws_cloudwatch_metric_alarm" "alarm_mem_no_lb" {
     "ClusterName" = var.ecs_cluster.name
     "ServiceName" = aws_ecs_service.main_no_lb[count.index].name
   }
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 #
@@ -193,11 +232,14 @@ resource "aws_security_group" "ecs_sg" {
   description = "${var.name}-${var.environment} container security group"
   vpc_id      = var.ecs_vpc_id
 
-  tags = {
-    Name        = "ecs-${var.name}-${var.environment}"
-    Environment = var.environment
-    Automation  = "Terraform"
-  }
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 resource "aws_security_group_rule" "app_ecs_allow_outbound" {
@@ -391,6 +433,15 @@ data "aws_iam_policy_document" "task_execution_role_policy_doc" {
 resource "aws_iam_role" "task_role" {
   name               = "ecs-task-role-${var.name}-${var.environment}"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 resource "aws_iam_role" "task_execution_role" {
@@ -398,6 +449,15 @@ resource "aws_iam_role" "task_execution_role" {
 
   name               = "ecs-task-execution-role-${var.name}-${var.environment}"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 resource "aws_iam_role_policy" "task_execution_role_policy" {
@@ -439,6 +499,15 @@ resource "aws_ecs_task_definition" "main" {
       container_definitions,
     ]
   }
+
+  tags = merge(
+      var.tags,
+      map(
+        "Name", "${var.name}-${var.environment}",
+        "Environment", var.environment,
+        "Automation", "Terraform"
+      )
+    )
 }
 
 # Create a data source to pull the latest active revision from
@@ -539,6 +608,17 @@ resource "aws_ecs_service" "main" {
   lifecycle {
     ignore_changes = [task_definition]
   }
+
+  propagate_tags = "TASK_DEFINITION"
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
 
 # NOTE: We have to duplicate this resource with a count instead of parameterizing
@@ -600,4 +680,13 @@ resource "aws_ecs_service" "main_no_lb" {
   lifecycle {
     ignore_changes = [task_definition]
   }
+
+  tags = merge(
+    var.tags,
+    map(
+      "Name", "${var.name}-${var.environment}",
+      "Environment", var.environment,
+      "Automation", "Terraform"
+    )
+  )
 }
