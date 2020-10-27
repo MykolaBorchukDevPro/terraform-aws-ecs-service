@@ -210,9 +210,3 @@ variable "service_registries" {
   }))
   default = []
 }
-
-variable "tags" {
-  description = ""
-  type = map
-  default = {}
-}
