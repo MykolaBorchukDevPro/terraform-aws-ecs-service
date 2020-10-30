@@ -433,6 +433,7 @@ data "aws_iam_policy_document" "task_execution_role_policy_doc" {
 resource "aws_iam_role" "task_role" {
   name               = "ecs-task-role-${var.name}-${var.environment}"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
+//  assume_role_policy = var.custom_task_role == "" ? data.aws_iam_policy_document.ecs_assume_role_policy.json : var.custom_task_role
 
   tags = merge(
     var.tags,
@@ -480,7 +481,7 @@ data "aws_region" "current" {
 resource "aws_ecs_task_definition" "main" {
   family        = "${var.name}-${var.environment}"
   network_mode  = "awsvpc"
-  task_role_arn = aws_iam_role.task_role.arn
+  task_role_arn = var.custom_task_role == "" ? aws_iam_role.task_role.arn : var.custom_task_role
 
   # Fargate requirements
   requires_compatibilities = compact([var.ecs_use_fargate ? "FARGATE" : ""])

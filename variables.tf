@@ -216,3 +216,7 @@ variable "tags" {
   type = map
   default = {}
 }
+
+variable "custom_task_role" {
+  default = ""
+}
