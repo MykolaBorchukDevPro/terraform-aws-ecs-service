@@ -492,13 +492,13 @@ resource "aws_ecs_task_definition" "main" {
   container_definitions = var.container_definitions == "" ? local.default_container_definitions : var.container_definitions
 
   lifecycle {
-    ignore_changes = [
-      requires_compatibilities,
-      cpu,
-      memory,
-      execution_role_arn,
-      container_definitions,
-    ]
+//    ignore_changes = [
+//      requires_compatibilities,
+//      cpu,
+//      memory,
+//      execution_role_arn,
+//      container_definitions,
+//    ]
   }
 
   tags = merge(
@@ -560,6 +560,8 @@ resource "aws_ecs_service" "main" {
     data.aws_ecs_task_definition.main.revision,
   )}"
 
+//  task_definition = aws_ecs_task_definition.main.arn
+
   desired_count                      = var.tasks_desired_count
   deployment_minimum_healthy_percent = var.tasks_minimum_healthy_percent
   deployment_maximum_percent         = var.tasks_maximum_percent
@@ -607,7 +609,7 @@ resource "aws_ecs_service" "main" {
   }
 
   lifecycle {
-    ignore_changes = [task_definition]
+//    ignore_changes = [task_definition]
   }
 
   propagate_tags = "TASK_DEFINITION"
